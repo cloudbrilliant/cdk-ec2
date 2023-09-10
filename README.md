@@ -12,9 +12,9 @@ This is bare minium example which creates an EC2 instance using:
 
 Resources:
 
-- https://docs.aws.amazon.com/cdk/v2/guide/home.html
-- https://github.com/aws/aws-cdk
-- cdk_ec2/cdk_ec2_stack.py (see inline)
+* https://docs.aws.amazon.com/cdk/v2/guide/home.html
+* https://github.com/aws/aws-cdk
+* cdk_ec2/cdk_ec2_stack.py (see inline)
 
 ## CDK Stack
 
@@ -22,7 +22,7 @@ Constructs for the stack are defined in here cdk_ec2/cdk_ec2_stack.py
 
 Contstruct for EC2 & related aws_ec2
 
-```
+```python
 from aws_cdk import (
     Stack,
     aws_ec2 as ec2,
@@ -89,6 +89,40 @@ class CdkEc2Stack(Stack):
         # Output Instance ID
         CfnOutput(self, "InstanceId", value=instance.instance_id)
 
+```
+
+## Connect to EC2
+
+After deploying you can access details of how to connect to your EC2 instance from within AWS Console or via a series of AWS CLI commands.
+
+Get Instance Info
+
+```bash
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId, InstanceType, State.Name, KeyName, PublicIpAddress, PublicDnsName]' --output table
+```
+
+List Parameters (to find CDK generated keys)
+
+```bash
+aws ssm describe-parameters
+```
+
+Download key as .pem file locally (key name string will look something like this /ec2/keypair/key-000000)
+
+```bash
+aws ssm get-parameter --name <keyname> --with-decryption --query "Parameter.Value" --output text > mykey.pem 
+```
+
+Run this command, if necessary, to ensure your key is not publicly viewable
+
+```bash
+chmod 400 mykey.pem
+```
+
+SSH into new instance (update ec2-00-00-00-00.compute-1.amazonaws.com)
+
+```bash
+ssh -i "mykey.pem" ec2-user@ec2-00-00-00-00.compute-1.amazonaws.com
 ```
 
 ## Welcome to your CDK Python project! (CDK Template)
